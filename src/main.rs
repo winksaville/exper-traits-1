@@ -1,19 +1,36 @@
 // Trait for States
 pub trait State<'a, SM, P> {
-    fn process(&self, sm: &'a mut SM, msg: &P);
+    fn process(&self, sm: &'a mut SM, msg: &P) -> &'a mut SM;
 }
 
 // Create a Protocal with two messages
 struct State1;
 
 impl<'a> State<'a, MySm<'a>, Protocol1> for State1 {
-    fn process(&self, sm: &'a mut MySm, msg: &Protocol1) {
+    fn process(&self, sm: &'a mut MySm<'a>, msg: &Protocol1) -> &'a mut MySm<'a> {
         match *msg {
             Protocol1::Msg1 { f1 } => {
-                sm.data1 += 1;
-                println!("State1: process sm.data1={} Msg1::f1={}", sm.data1, f1);
+                sm.data1 += f1;
+                println!("State1: process sm.data1={:3}      added Msg1::f1={}", sm.data1, f1);
             }
         }
+
+        sm
+    }
+}
+
+struct State2;
+
+impl<'a> State<'a, MySm<'a>, Protocol1> for State2 {
+    fn process(&self, sm: &'a mut MySm<'a>, msg: &Protocol1) -> &'a mut MySm<'a> {
+        match *msg {
+            Protocol1::Msg1 { f1 } => {
+                sm.data1 -= f1;
+                println!("State2: process sm.data1={:3} subtracted Msg1::f1={}", sm.data1, f1);
+            }
+        }
+
+        sm
     }
 }
 
@@ -31,7 +48,7 @@ impl<'a> MySm<'a> {
     fn new(s: &'a dyn State<'a, Self, Protocol1>) -> Self {
         MySm {
             current_state: s,
-            data1: 1,
+            data1: 0,
         }
     }
 }
@@ -39,13 +56,18 @@ impl<'a> MySm<'a> {
 fn main() {
     // Create State1
     let s1 = State1;
+    let s2 = State2;
 
     // Create State Machine and State1 as current state
-    let mut mysm = MySm::new(&s1);
+    let mut sm = MySm::new(&s1);
+    println!("Create sm       sm.data1={}", sm.data1);
 
     // Allocate a message on the stack and dispatch it
     let msg = Protocol1::Msg1 { f1: 123 };
 
     // Processes a message
-    mysm.current_state.process(&mut mysm, &msg)
+    let mut sm = sm.current_state.process(&mut sm, &msg);
+
+    sm.current_state = &s2;
+    sm.current_state.process(&mut sm, &msg);
 }
