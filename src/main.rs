@@ -1,17 +1,16 @@
 // Trait for States
-pub trait State<'a, SM, P> {
-    fn process(&self, sm: &'a mut SM, msg: &P);
+pub trait State<'a, P> {
+    fn process(&self, msg: &P);
 }
 
 // Create a Protocal with two messages
 struct State1;
 
-impl<'a> State<'a, Sm1<'a>, Protocol1> for State1 {
-    fn process(&self, sm: &'a mut Sm1, msg: &Protocol1) {
+impl<'a> State<'a, Protocol1> for State1 {
+    fn process(&self, msg: &Protocol1) {
         match *msg {
             Protocol1::Msg1 { f1 } => {
-                sm.data1 += f1;
-                println!("State1: process sm.data1={} Msg1::f1={}", sm.data1, f1);
+                println!("State1: process Msg1::f1={}", f1);
             }
         }
     }
@@ -23,14 +22,14 @@ enum Protocol1 {
 }
 
 struct Sm1<'a> {
-    states: Vec<&'a dyn State<'a, Self, Protocol1>>,
+    states: Vec<&'a dyn State<'a, Protocol1>>,
     current_state_idx: usize,
     //current_state: &'a dyn State<'a, Self, Protocol1>,
     data1: i32,
 }
 
 impl<'a> Sm1<'a> {
-    fn new(s: &'a dyn State<'a, Self, Protocol1>) -> Self {
+    fn new(s: &'a dyn State<'a, Protocol1>) -> Self {
         Sm1 {
             states: vec![s],
             current_state_idx: 0,
@@ -51,25 +50,10 @@ fn main() {
     let msg = Protocol1::Msg1 { f1: 123 };
 
     // Processes a message
-    sm.states[sm.current_state_idx].process(&mut sm, &msg);
+    sm.states[sm.current_state_idx].process(&msg);
 
-    // Using sm causes error E0503:
-    //   $ cargo run
-    //      Compiling expr-traits-1 v0.1.0 (/home/wink/prgs/rust/myrepos/exper-traits-1)
-    //   error[E0503]: cannot use `sm.data1` because it was mutably borrowed
-    //     --> src/main.rs:73:13
-    //      |
-    //   54 |     sm.states[sm.current_state_idx].process(&mut sm, &msg);
-    //      |                                             ------- borrow of `sm` occurs here
-    //   ...
-    //   73 |     let x = sm.data1;
-    //      |             ^^^^^^^^
-    //      |             |
-    //      |             use of borrowed `sm`
-    //      |             borrow later used here
-    //
-    //   For more information about this error, try `rustc --explain E0503`.
-    //   error: could not compile `expr-traits-1` due to previous error
-    let x = sm.data1;
-    println!("{}", x);
+    sm.data1 += match msg {
+        Protocol1::Msg1 { f1 } => f1,
+    };
+    println!("sm.data1: {}", sm.data1);
 }
