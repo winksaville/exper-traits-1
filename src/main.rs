@@ -1,13 +1,13 @@
 // Trait for States
-pub trait State<'g, SM, P> {
-    fn process(&self, sm: &'g mut SM, _msg: &'g P);
+pub trait State<'a, SM, P> {
+    fn process(&self, sm: &'a mut SM, msg: &P);
 }
 
 // Create a Protocal with two messages
 struct State1;
 
-impl<'g> State<'g, MySm<'g>, Protocol1> for State1 {
-    fn process(&self, sm: &'g mut MySm, msg: &'g Protocol1) {
+impl<'a> State<'a, MySm<'a>, Protocol1> for State1 {
+    fn process(&self, sm: &'a mut MySm, msg: &Protocol1) {
         match *msg {
             Protocol1::Msg1 { f1 } => {
                 sm.data1 += 1;
@@ -22,13 +22,13 @@ enum Protocol1 {
     Msg1 { f1: i32 },
 }
 
-struct MySm<'g> {
-    current_state: &'g dyn State<'g, Self, Protocol1>,
+struct MySm<'a> {
+    current_state: &'a dyn State<'a, Self, Protocol1>,
     data1: i32,
 }
 
-impl<'g> MySm<'g> {
-    fn new(s: &'g dyn State<'g, Self, Protocol1>) -> Self {
+impl<'a> MySm<'a> {
+    fn new(s: &'a dyn State<'a, Self, Protocol1>) -> Self {
         MySm {
             current_state: s,
             data1: 1,
