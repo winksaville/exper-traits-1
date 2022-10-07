@@ -1,36 +1,36 @@
 // Trait for States
 pub trait State<'a, SM, P> {
-    fn process(&self, sm: &'a mut SM, msg: &P) -> &'a mut SM;
+    fn process(&self, sm: &'a /*mut*/ SM, msg: &P); // -> &'a mut SM;
 }
 
 // Create a Protocal with two messages
 struct State1;
 
 impl<'a> State<'a, MySm<'a>, Protocol1> for State1 {
-    fn process(&self, sm: &'a mut MySm<'a>, msg: &Protocol1) -> &'a mut MySm<'a> {
+    fn process(&self, sm: &'a /*mut*/ MySm<'a>, msg: &Protocol1) { // -> &'a mut MySm<'a> {
         match *msg {
             Protocol1::Msg1 { f1 } => {
-                sm.data1 += f1;
+                //sm.data1 += f1;
                 println!("State1: process sm.data1={:3}      added Msg1::f1={}", sm.data1, f1);
             }
         }
 
-        sm
+        //sm
     }
 }
 
 struct State2;
 
 impl<'a> State<'a, MySm<'a>, Protocol1> for State2 {
-    fn process(&self, sm: &'a mut MySm<'a>, msg: &Protocol1) -> &'a mut MySm<'a> {
+    fn process(&self, sm: &'a /*mut*/ MySm<'a>, msg: &Protocol1) { // -> &'a mut MySm<'a> {
         match *msg {
             Protocol1::Msg1 { f1 } => {
-                sm.data1 -= f1;
+                //sm.data1 -= f1;
                 println!("State2: process sm.data1={:3} subtracted Msg1::f1={}", sm.data1, f1);
             }
         }
 
-        sm
+        //sm
     }
 }
 
@@ -52,8 +52,8 @@ impl<'a> MySm<'a> {
         }
     }
 
-    fn dispatch(&'a mut self, msg: &Protocol1) -> &'a mut MySm<'a> {
-        self.current_state.process(self, msg)
+    fn dispatch(&'a /*mut*/ self, msg: &Protocol1) { // -> &'a mut MySm<'a> {
+        self.current_state.process(self, msg);
     }
 }
 
@@ -70,7 +70,8 @@ fn main() {
     let msg = Protocol1::Msg1 { f1: 123 };
 
     // Processes a message
-    let mut sm = sm.dispatch(&msg);
+    //let mut sm = sm.dispatch(&msg);
+    sm.dispatch(&msg);
 
     sm.current_state = &s2;
     sm.dispatch(&msg);
