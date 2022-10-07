@@ -51,6 +51,10 @@ impl<'a> MySm<'a> {
             data1: 0,
         }
     }
+
+    fn dispatch(&'a mut self, msg: &Protocol1) -> &'a mut MySm<'a> {
+        self.current_state.process(self, msg)
+    }
 }
 
 fn main() {
@@ -66,8 +70,8 @@ fn main() {
     let msg = Protocol1::Msg1 { f1: 123 };
 
     // Processes a message
-    let mut sm = sm.current_state.process(&mut sm, &msg);
+    let mut sm = sm.dispatch(&msg);
 
     sm.current_state = &s2;
-    sm.current_state.process(&mut sm, &msg);
+    sm.dispatch(&msg);
 }
