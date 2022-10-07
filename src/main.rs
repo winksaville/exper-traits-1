@@ -23,14 +23,18 @@ enum Protocol1 {
 }
 
 struct Sm1<'a> {
-    current_state: &'a dyn State<'a, Self, Protocol1>,
+    states: Vec<&'a dyn State<'a, Self, Protocol1>>,
+    current_state_idx: usize,
+    //current_state: &'a dyn State<'a, Self, Protocol1>,
     data1: i32,
 }
 
 impl<'a> Sm1<'a> {
     fn new(s: &'a dyn State<'a, Self, Protocol1>) -> Self {
         Sm1 {
-            current_state: s,
+            states: vec![s],
+            current_state_idx: 0,
+            //current_state: s,
             data1: 1,
         }
     }
@@ -47,18 +51,18 @@ fn main() {
     let msg = Protocol1::Msg1 { f1: 123 };
 
     // Processes a message
-    sm.current_state.process(&mut sm, &msg);
+    sm.states[sm.current_state_idx].process(&mut sm, &msg);
 
     // Using sm causes error E0503:
     //   $ cargo run
     //      Compiling expr-traits-1 v0.1.0 (/home/wink/prgs/rust/myrepos/exper-traits-1)
     //   error[E0503]: cannot use `sm.data1` because it was mutably borrowed
-    //     --> src/main.rs:69:13
+    //     --> src/main.rs:73:13
     //      |
-    //   50 |     sm.current_state.process(&mut sm, &msg);
-    //      |                              ------- borrow of `sm` occurs here
+    //   54 |     sm.states[sm.current_state_idx].process(&mut sm, &msg);
+    //      |                                             ------- borrow of `sm` occurs here
     //   ...
-    //   69 |     let x = sm.data1;
+    //   73 |     let x = sm.data1;
     //      |             ^^^^^^^^
     //      |             |
     //      |             use of borrowed `sm`
