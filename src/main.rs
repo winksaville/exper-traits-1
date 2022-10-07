@@ -48,4 +48,24 @@ fn main() {
 
     // Processes a message
     sm.current_state.process(&mut sm, &msg);
+
+    // Using sm causes error E0503:
+    //   $ cargo run
+    //      Compiling expr-traits-1 v0.1.0 (/home/wink/prgs/rust/myrepos/exper-traits-1)
+    //   error[E0503]: cannot use `sm.data1` because it was mutably borrowed
+    //     --> src/main.rs:69:13
+    //      |
+    //   50 |     sm.current_state.process(&mut sm, &msg);
+    //      |                              ------- borrow of `sm` occurs here
+    //   ...
+    //   69 |     let x = sm.data1;
+    //      |             ^^^^^^^^
+    //      |             |
+    //      |             use of borrowed `sm`
+    //      |             borrow later used here
+    //
+    //   For more information about this error, try `rustc --explain E0503`.
+    //   error: could not compile `expr-traits-1` due to previous error
+    let x = sm.data1;
+    println!("{}", x);
 }
