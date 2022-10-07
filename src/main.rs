@@ -48,4 +48,7 @@ fn main() {
 
     // Processes a message
     sm.current_state.process(&mut sm, &msg);
+
+    let x = sm.data1;
+    println!("{}", x);
 }
