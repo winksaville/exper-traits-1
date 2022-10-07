@@ -1,6 +1,6 @@
-# expr-traits-1
+# exper-traits-1
 
-A first experiment with traits
+A first experiment with traits, modeling a crude state machine.
 
 
 ## Building and running
