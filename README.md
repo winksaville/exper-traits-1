@@ -2,29 +2,20 @@
 
 A first experiment with traits, modeling a crude state machine.
 
-This is currently failing with:
-
+This works because I'm not returning `&'a mut SM` from process:
 ```
 $ cargo run
    Compiling expr-traits-1 v0.1.0 (/home/wink/prgs/rust/myrepos/exper-traits-1)
-error[E0503]: cannot use `sm.data1` because it was mutably borrowed
-  --> src/main.rs:69:13
-   |
-50 |     sm.current_state.process(&mut sm, &msg);
-   |                              ------- borrow of `sm` occurs here
-...
-69 |     let x = sm.data1;
-   |             ^^^^^^^^
-   |             |
-   |             use of borrowed `sm`
-   |             borrow later used here
+    Finished dev [unoptimized + debuginfo] target(s) in 0.13s
+     Running `target/debug/expr-traits-1`
+State1: process sm.data1=124 Msg1::f1=123
+124
+125
+``
 
-For more information about this error, try `rustc --explain E0503`.
-error: could not compile `expr-traits-1` due to previous error
-```
-
-I can get it working by having State::Process return &'a mut SM, see
-https://github.com/winksaville/exper-traits-1/tree/return-sm-from-process
+It's weird I have to do that. It seems to me that after calling
+process the borrowed SM should be "dropped" and I shouldn't have
+to "return it" :(
 
 ## Building and running
 

@@ -1,19 +1,21 @@
 // Trait for States
 pub trait State<'a, SM, P> {
-    fn process(&self, sm: &'a mut SM, msg: &P);
+    fn process(&self, sm: &'a mut SM, msg: &P) -> &'a mut SM;
 }
 
 // Create a Protocal with two messages
 struct State1;
 
 impl<'a> State<'a, Sm1<'a>, Protocol1> for State1 {
-    fn process(&self, sm: &'a mut Sm1, msg: &Protocol1) {
+    fn process(&self, sm: &'a mut Sm1<'a>, msg: &Protocol1) -> &'a mut Sm1<'a> {
         match *msg {
             Protocol1::Msg1 { f1 } => {
                 sm.data1 += f1;
                 println!("State1: process sm.data1={} Msg1::f1={}", sm.data1, f1);
             }
         }
+
+        sm
     }
 }
 
@@ -47,25 +49,10 @@ fn main() {
     let msg = Protocol1::Msg1 { f1: 123 };
 
     // Processes a message
-    sm.current_state.process(&mut sm, &msg);
+    let mut sm = sm.current_state.process(&mut sm, &msg);
 
-    // Using sm causes error E0503:
-    //   $ cargo run
-    //      Compiling expr-traits-1 v0.1.0 (/home/wink/prgs/rust/myrepos/exper-traits-1)
-    //   error[E0503]: cannot use `sm.data1` because it was mutably borrowed
-    //     --> src/main.rs:69:13
-    //      |
-    //   50 |     sm.current_state.process(&mut sm, &msg);
-    //      |                              ------- borrow of `sm` occurs here
-    //   ...
-    //   69 |     let x = sm.data1;
-    //      |             ^^^^^^^^
-    //      |             |
-    //      |             use of borrowed `sm`
-    //      |             borrow later used here
-    //
-    //   For more information about this error, try `rustc --explain E0503`.
-    //   error: could not compile `expr-traits-1` due to previous error
-    let x = sm.data1;
-    println!("{}", x);
+    // I can now use and modify sm
+    println!("{}", sm.data1);
+    sm.data1 += 1;
+    println!("{}", sm.data1);
 }
